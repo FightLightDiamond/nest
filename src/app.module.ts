@@ -9,6 +9,12 @@ import { BusinessSectorModule } from './business-sector/business-sector.module';
 import { CsvModule } from 'nest-csv-parser';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
+import { FeedModule } from './feed/feed.module';
+import { AuthModule } from './auth/auth.module';
+import { ConnectModule } from './connect/connect.module';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './_app/exceptions/all-exceptions.filter';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -23,8 +29,18 @@ import { ConfigModule } from '@nestjs/config';
     QuizModule,
     UserModule,
     BusinessSectorModule,
+    FeedModule,
+    AuthModule,
+    ConnectModule,
+    ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

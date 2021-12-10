@@ -31,6 +31,4 @@ export class Question extends BaseEntity {
 
   @Column({ type: 'int', nullable: true })
   quizId: number;
-
-  synchronize: false;
 }

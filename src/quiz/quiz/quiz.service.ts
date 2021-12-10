@@ -3,7 +3,6 @@ import { QuizRepository } from './quiz.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { Quiz } from './quiz.entity';
-import { Question } from '../question/question.entity';
 
 @Injectable()
 export class QuizService {

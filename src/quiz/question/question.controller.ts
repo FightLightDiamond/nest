@@ -13,6 +13,9 @@ import { Question } from './question.entity';
 import { QuizService } from '../quiz/quiz.service';
 import { isNil } from '@nestjs/common/utils/shared.utils';
 
+/**
+ * Question Controller
+ */
 @Controller('question')
 export class QuestionController {
   constructor(
@@ -20,12 +23,19 @@ export class QuestionController {
     private quizService: QuizService,
   ) {}
 
+  /**
+   * Get Questions
+   */
   @Get('/')
   @UsePipes(ValidationPipe)
   getQuestions() {
     return 123;
   }
 
+  /**
+   * Save Question
+   * @param question
+   */
   @Post('/')
   @UsePipes(ValidationPipe)
   async saveQuestion(@Body() question: CreateQuestionDto): Promise<Question> {

@@ -6,6 +6,7 @@ import { UserRepository } from '../user/user.repository';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserInterface } from '../user/user.interface';
+import { AuthTokenService } from './auth-token/auth-token.service';
 
 /**
  * Auth Service
@@ -15,6 +16,7 @@ export class AuthService {
   constructor(
     @InjectRepository(UserRepository) private userRepository: UserRepository,
     private jwtService: JwtService,
+    private readonly authTokenService: AuthTokenService,
   ) {}
 
   /**
@@ -26,7 +28,15 @@ export class AuthService {
     return this.validateUser(email, password).pipe(
       switchMap((user: User) => {
         if (user) {
-          return from(this.jwtService.signAsync({ user }));
+          return from(this.jwtService.signAsync({ user })).pipe(
+            map((jwt) => {
+              this.authTokenService.create({
+                userId: user.id,
+                token: jwt,
+              });
+              return jwt;
+            }),
+          );
         }
       }),
     );

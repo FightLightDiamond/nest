@@ -4,7 +4,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -17,6 +16,7 @@ import { UserInterface } from './user.interface';
 import { FriendRequest } from '../connect/friend-request.entity';
 import { Conversation } from '../chat/conversation/conversation.entity';
 import { Message } from '../chat/message/message.entity';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity('users')
 export class User extends BaseEntity implements UserInterface {
@@ -47,6 +47,7 @@ export class User extends BaseEntity implements UserInterface {
   @Column({
     type: 'varchar',
   })
+  @Exclude()
   password: string;
 
   @Column({
@@ -76,6 +77,14 @@ export class User extends BaseEntity implements UserInterface {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Expose()
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  /**
+   * Relationship
+   */
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
   //sent friends
@@ -99,6 +108,11 @@ export class User extends BaseEntity implements UserInterface {
   //message
   @OneToMany(() => Message, (message) => message.user)
   messages: Message[];
+
+  constructor(partial: Partial<User>) {
+    super();
+    Object.assign(this, partial);
+  }
 
   @BeforeInsert()
   async setPassword(password: string) {

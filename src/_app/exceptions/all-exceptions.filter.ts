@@ -18,6 +18,7 @@ import * as fs from 'fs';
  */
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
+    debugger;
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -33,7 +34,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception.message;
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
-      errorMessage: 'Critial internal server error occurred';
+      errorMessage = 'Critial internal server error occurred';
     }
 
     const errorResponse = this.getErrorResponse(status, errorMessage, request);
@@ -79,13 +80,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
   ): string => {
     const { statusCode, error, timeStamp } = errorResponse;
     const { url, method, user } = request;
-    const errorLog = `${timeStamp}: Response Code: ${statusCode} - Method: ${method} - URL: ${url} - ${error} - ${JSON.stringify(
+    return `${timeStamp}: Response Code: ${statusCode} - Method: ${method} - URL: ${url} - ${error} - ${JSON.stringify(
       user ?? 'Not signed in',
     )}\n\n ${
       exception instanceof HttpException ? exception?.stack : error
     }\n\n`;
-    console.log(7, errorLog);
-    return errorLog;
   };
 
   /**

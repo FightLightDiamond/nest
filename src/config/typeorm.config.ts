@@ -4,18 +4,6 @@ import {
 } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-// export const typeormConfig: TypeOrmModuleOptions = {
-//   type: 'mysql',
-//   host: 'localhost',
-//   port: 3306,
-//   username: 'root',
-//   password: 'root',
-//   database: 'nestjs',
-//   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-//   synchronize: false,
-//   logging: true,
-// };
-
 export default class TypeormConfig {
   static getOrmConfig(configService: ConfigService): TypeOrmModuleOptions {
     return {

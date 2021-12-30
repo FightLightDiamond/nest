@@ -10,6 +10,8 @@ import {
   Res,
   Param,
   Put,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterReqDto } from './dto/register.req.dto';
@@ -45,7 +47,7 @@ export class UserController {
    * @param registerBody
    */
   @Post('/register')
-  // @UsePipes(ValidationPipe)
+  @UsePipes(ValidationPipe)
   async doUserRegistration(
     @Body(SETTING.VALIDATION_PIPE)
     registerBody: RegisterReqDto,

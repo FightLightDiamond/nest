@@ -5,6 +5,8 @@ import { FeedPost } from '../models/post.interface';
 import { from, Observable } from 'rxjs';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { User } from '../../user/user.entity';
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 
 @Injectable()
 export class FeedService {
@@ -13,7 +15,7 @@ export class FeedService {
     private readonly postRepository: PostRepository,
   ) {}
 
-  gets(take = 1, skip = 1): Observable<any> {
+  gets(take = 10, skip = 0): Observable<any> {
     return from(
       this.postRepository
         .findAndCount({ take, skip })
@@ -29,8 +31,8 @@ export class FeedService {
   }
 
   createPost(user: User, feedPost: FeedPost): Observable<FeedPost> {
-    feedPost.author = user;
-    // feedPost.authorId = user.id;
+    // feedPost.author = user;
+    feedPost.authorId = user.id;
     // console.log({ user, feedPost });
     return from(this.postRepository.save(feedPost));
   }

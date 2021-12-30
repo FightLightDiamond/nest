@@ -27,6 +27,7 @@ import { UserInterface } from '../user/user.interface';
 import { MessageInterface } from './message/message.interface';
 import { Message } from './message/message.entity';
 import { ActiveConversation } from './active-conversation/active-conversation.entity';
+import { Cron } from '@nestjs/schedule';
 
 // @WebSocketGateway({
 //   cors: {
@@ -62,12 +63,12 @@ export class ChatGateway
 
   //Note: Runs when server starts
   onModuleInit() {
-    this.conversationService
-      .removeActiveConversations()
-      .pipe(take(1))
-      .subscribe();
-    this.conversationService.removeMessages().pipe(take(1)).subscribe();
-    this.conversationService.removeConversations().pipe(take(1)).subscribe();
+    // this.conversationService
+    //   .removeActiveConversations()
+    //   .pipe(take(1))
+    //   .subscribe();
+    // this.conversationService.removeMessages().pipe(take(1)).subscribe();
+    // this.conversationService.removeConversations().pipe(take(1)).subscribe();
   }
 
   /**
@@ -88,6 +89,9 @@ export class ChatGateway
         this.getConversations(client, user.id);
       }
     });
+    client.join('some room');
+
+    client.to('some room').emit('some event', 'abc');
   }
 
   /**
@@ -220,5 +224,13 @@ export class ChatGateway
       console.log({ ex });
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Cron('*/25 * * * * *', {
+    name: 'cronSW',
+  })
+  cronSW() {
+    this.logger.debug('cronSW: ' + Date.now());
+    this.server.emit('cronSW', 'cronSW');
   }
 }

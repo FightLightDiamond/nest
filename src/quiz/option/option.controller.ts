@@ -4,6 +4,9 @@ import { CreateOptionDto } from './dto/create-option.dto';
 import { QuestionService } from '../question/question.service';
 import { isNil } from '@nestjs/common/utils/shared.utils';
 
+/**
+ * Option Controller
+ */
 @Controller('option')
 export class OptionController {
   constructor(
@@ -11,6 +14,10 @@ export class OptionController {
     private questionService: QuestionService,
   ) {}
 
+  /**
+   * Save Option To Question
+   * @param createOption
+   */
   @Post('/')
   async saveOptionToQuestion(@Body() createOption: CreateOptionDto) {
     const question = await this.questionService.findQuestion(

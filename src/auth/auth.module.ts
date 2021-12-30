@@ -9,15 +9,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from '../user/user.repository';
 import { PassportModule } from '@nestjs/passport';
 import { RolesGuard } from './guards/roles.guard';
+import { AuthTokenService } from './auth-token/auth-token.service';
+import { AuthTokenRepository } from './auth-token/auth-token.repository';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync(jwtConfigAsync),
-    TypeOrmModule.forFeature([UserRepository]),
+    TypeOrmModule.forFeature([UserRepository, AuthTokenRepository]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtGuard, RolesGuard],
+  providers: [AuthService, JwtStrategy, JwtGuard, RolesGuard, AuthTokenService],
   exports: [AuthService],
 })
 export class AuthModule {}

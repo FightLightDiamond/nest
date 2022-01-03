@@ -109,11 +109,6 @@ export class User extends BaseEntity implements UserInterface {
   @OneToMany(() => Message, (message) => message.user)
   messages: Message[];
 
-  constructor(partial: Partial<User>) {
-    super();
-    Object.assign(this, partial);
-  }
-
   @BeforeInsert()
   async setPassword(password: string) {
     const salt = await bcrypt.genSalt();

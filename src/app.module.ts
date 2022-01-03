@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,7 +7,6 @@ import { QuizModule } from './quiz/quiz.module';
 import { UserModule } from './user/user.module';
 import { BusinessSectorModule } from './business-sector/business-sector.module';
 import { CsvModule } from 'nest-csv-parser';
-import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { FeedModule } from './feed/feed.module';
 import { AuthModule } from './auth/auth.module';
@@ -24,6 +23,7 @@ import { AudioConsumer } from './_app/queue/consumers/AudioConsumer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OrderCreatedListener } from './_app/observers/listeners/OrderCreatedListener';
 import { ProductModule } from './product/product.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -33,6 +33,10 @@ import { ProductModule } from './product/product.module';
     }),
     // Mysql
     TypeOrmModule.forRootAsync(typeormConfigAsync),
+    //Mongo
+    MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
+      autoCreate: true,
+    }),
     HttpModule,
     CsvModule,
     // TypeOrmModule.forRoot(typeormConfig),

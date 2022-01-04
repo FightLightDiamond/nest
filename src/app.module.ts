@@ -24,6 +24,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OrderCreatedListener } from './_app/observers/listeners/OrderCreatedListener';
 import { ProductModule } from './product/product.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { ExampleEmailServiceService } from './example-email-service/example-email-service.service';
 
 @Module({
   imports: [
@@ -34,9 +37,9 @@ import { MongooseModule } from '@nestjs/mongoose';
     // Mysql
     TypeOrmModule.forRootAsync(typeormConfigAsync),
     //Mongo
-    MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
-      autoCreate: true,
-    }),
+    // MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
+    //   autoCreate: true,
+    // }),
     HttpModule,
     CsvModule,
     // TypeOrmModule.forRoot(typeormConfig),
@@ -68,6 +71,21 @@ import { MongooseModule } from '@nestjs/mongoose';
     ),
     EventEmitterModule.forRoot(),
     ProductModule,
+    //email
+    MailerModule.forRoot({
+      transport:
+        'smtps://phamminhcuong1704bnfrv@gmail.com:vincent1704BN@smtp.gmail.com',
+      defaults: {
+        from: '"nest-modules" <modules@nestjs.com>',
+      },
+      template: {
+        dir: __dirname + '/templates',
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -79,6 +97,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     TasksService,
     AudioConsumer,
     OrderCreatedListener,
+    ExampleEmailServiceService,
   ],
 })
 export class AppModule {}

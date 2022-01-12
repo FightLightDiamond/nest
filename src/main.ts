@@ -4,13 +4,44 @@ import * as fs from 'fs';
 import * as morgan from 'morgan';
 import { VersioningType } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
+import { WinstonModule } from 'nest-winston';
+import winston from 'winston';
 
 const logStream = fs.createWriteStream('api.log', {
   flags: 'a',
 });
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    // logger:
+    //   process.env.NODE_ENV === 'production'
+    //     ? WinstonModule.createLogger({
+    //         level: 'info',
+    //         format: winston?.format?.json(),
+    //         transports: [
+    //           new winston.transports.File({
+    //             filename: 'logs/error.log',
+    //             level: 'error',
+    //           }),
+    //           new winston.transports.File({
+    //             filename: 'logs/query.log',
+    //             level: 'query',
+    //           }),
+    //           new winston.transports.File({
+    //             filename: 'logs/info.log',
+    //             level: 'info',
+    //           }),
+    //           new winston.transports.Console({
+    //             format: winston.format.combine(
+    //               winston.format.colorize(),
+    //               winston.format.json(),
+    //             ),
+    //           }),
+    //         ],
+    //       })
+    //     : undefined,
+  });
   // or "app.enableVersioning()"
   // app.enableVersioning({
   //   type: VersioningType.URI,
@@ -65,3 +96,9 @@ async function bootstrap() {
   await app.startAllMicroservices();
 }
 bootstrap();
+
+import { PeerServer } from 'peer';
+const peerServer = PeerServer({ port: 9000, path: '/fld' });
+peerServer.on('open', (id) => {
+  console.log({ id });
+});

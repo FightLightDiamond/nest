@@ -23,7 +23,7 @@ import { AudioConsumer } from './_app/queue/consumers/AudioConsumer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OrderCreatedListener } from './_app/observers/listeners/OrderCreatedListener';
 import { ProductModule } from './product/product.module';
-import { MongooseModule } from '@nestjs/mongoose';
+// import { MongooseModule } from '@nestjs/mongoose';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ExampleEmailServiceService } from './example-email-service/example-email-service.service';

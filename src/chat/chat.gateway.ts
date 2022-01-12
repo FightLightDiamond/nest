@@ -34,8 +34,8 @@ import { Cron } from '@nestjs/schedule';
 //     origin: '*',
 //   },
 // })
-@WebSocketGateway({ cors: { origin: ['http://localhost:3000'] } })
-// @WebSocketGateway({ cors: true })
+// @WebSocketGateway({ cors: { origin: ['http://localhost:3000'] } })
+@WebSocketGateway({ cors: true })
 // @WebSocketGateway(3006, { cors: true })
 export class ChatGateway
   implements
@@ -75,7 +75,7 @@ export class ChatGateway
    * Handle Connection
    * @param client
    */
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   async handleConnection(client: Socket) {
     this.logger.log(client.id, 'Connected..............................');
 

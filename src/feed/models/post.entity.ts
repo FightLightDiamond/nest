@@ -7,24 +7,29 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../user/user.entity';
+import { UserEntity } from '../../user/user.entity';
+import {Field, ObjectType} from "@nestjs/graphql";
 
+@ObjectType()
 @Entity('posts')
-export class Post extends BaseEntity {
+export class PostEntity extends BaseEntity {
+  @Field()
   @PrimaryGeneratedColumn({
     comment: 'The post unique identifier',
   })
   id: number;
 
+  @Field()
   @Column({
     type: 'varchar',
     nullable: true,
   })
   body: string;
 
-  @ManyToOne(() => User, (author) => author.posts)
+  // @Field()
+  @ManyToOne(() => UserEntity, (author) => author.posts)
   @JoinColumn({ name: 'authorId' })
-  author: User;
+  author: UserEntity;
 
   // @Column({
   //   type: 'int',
@@ -33,6 +38,7 @@ export class Post extends BaseEntity {
   // })
   // authorId: number;
 
+  @Field()
   @Column('varchar', {
     default: [],
     transformer: {
@@ -44,6 +50,8 @@ export class Post extends BaseEntity {
       },
     },
   })
+
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 }

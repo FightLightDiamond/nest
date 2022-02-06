@@ -16,10 +16,10 @@ import {
 import { UserService } from './user.service';
 import { RegisterReqDto } from './dto/register.req.dto';
 import { SETTING } from '../app.utils';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import {Express, Response} from 'express';
 import {
   isFileExtensionSafe,
   removeFile,
@@ -28,7 +28,7 @@ import {
 import { Observable, of, switchMap } from 'rxjs';
 const path = require('path');
 import { UpdateResult } from 'typeorm';
-import { FriendRequest } from '../connect/friend-request.entity';
+import { FriendRequestEntity } from '../connect/friend-request.entity';
 import {
   IFriendRequestInterface,
   IFriendRequestStatus,
@@ -51,7 +51,7 @@ export class UserController {
   async doUserRegistration(
     @Body(SETTING.VALIDATION_PIPE)
     registerBody: RegisterReqDto,
-  ): Promise<User> {
+  ): Promise<UserEntity>  {
     return await this.userService.doUserRegistration(registerBody);
   }
 
@@ -107,7 +107,7 @@ export class UserController {
   sendFriendRequest(
     @Param('receiverId') receiverId: string,
     @Request() req,
-  ): Observable<FriendRequest | { error: string }> {
+  ): Observable<FriendRequestEntity | { error: string }> {
     return this.userService.sendFriendRequest(parseInt(receiverId), req.user);
   }
 
@@ -152,5 +152,11 @@ export class UserController {
       parseInt(friendRequestId),
       status,
     );
+  }
+
+  @Get('/confirm/:id')
+  confirmEmail(@Param('id') id: string) {
+    return this.userService.confirmEmail(id)
+    return `This action return a #${id} cat`
   }
 }

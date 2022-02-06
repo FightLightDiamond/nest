@@ -6,7 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '../user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { map, Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './guards/jwt.guard';
@@ -16,7 +16,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  login(@Body() user: User): Observable<{ token: string }> {
+  login(@Body() user: UserEntity): Observable<{ token: string }> {
     return this.authService
       .login(user)
       .pipe(map((jwt: string) => ({ token: jwt })));

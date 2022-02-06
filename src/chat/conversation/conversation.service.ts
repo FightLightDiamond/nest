@@ -4,8 +4,8 @@ import { ConversationRepository } from './conversation.repository';
 import { ActiveConversationRepository } from '../active-conversation/active-conversaction.repository';
 import { MessageRepository } from '../message/message.repository';
 import { from, map, mergeMap, Observable, of, switchMap, take } from 'rxjs';
-import { Conversation } from './conversation.entity';
-import { User } from '../../user/user.entity';
+import { ConversationEntity } from './conversation.entity';
+import { UserEntity } from '../../user/user.entity';
 import { ConversationInterface } from './conversation.interface';
 import { DeleteResult } from 'typeorm';
 import { MessageInterface } from '../message/message.interface';
@@ -53,10 +53,14 @@ export class ConversationService {
    * @param friend
    */
   createConversation(
-    creator: User,
-    friend: User,
+    creator: UserEntity,
+    friend: UserEntity,
   ): Observable<ConversationInterface> {
     console.log('Begin create conversation');
+    console.log({
+      creator, friend
+    })
+
     return this.getConversation(creator.id, friend.id).pipe(
       switchMap((conversation: ConversationInterface) => {
         debugger;
@@ -92,7 +96,7 @@ export class ConversationService {
    * Get Users In Conversation
    * @param conversationId
    */
-  getUsersInConversation(conversationId: number): Observable<Conversation[]> {
+  getUsersInConversation(conversationId: number): Observable<ConversationEntity[]> {
     return from(
       this.conversationRepository
         .createQueryBuilder('conversations')
@@ -130,7 +134,7 @@ export class ConversationService {
     socketId: string,
   ): Observable<ActiveConversationInterface> {
     return this.getConversation(userId, friendId).pipe(
-      switchMap((conversation: Conversation) => {
+      switchMap((conversation: ConversationEntity) => {
         if (!conversation) {
           console.log(
             `No conversation exists for userId: ${userId} and friendId: ${friendId}`,

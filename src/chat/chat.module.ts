@@ -12,6 +12,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ActiveConversationRepository } from './active-conversation/active-conversaction.repository';
 import { ConversationRepository } from './conversation/conversation.repository';
 import { MessageRepository } from './message/message.repository';
+import {AlertGateway} from "./alert.gateway";
 
 @Module({
   imports: [
@@ -26,7 +27,10 @@ import { MessageRepository } from './message/message.repository';
     AuthModule,
   ],
   providers: [
+    //gateway
+
     ChatGateway,
+    AlertGateway,
     MessageService,
     ConversationService,
     ActiveConversationService,

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { User } from '../user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { catchError, from, map, Observable, of, switchMap } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../user/user.repository';
@@ -23,10 +23,10 @@ export class AuthService {
    * Login
    * @param user
    */
-  login(user: User): Observable<string> {
+  login(user: UserEntity): Observable<string> {
     const { email, password } = user;
     return this.validateUser(email, password).pipe(
-      switchMap((user: User) => {
+      switchMap((user: UserEntity) => {
         if (user) {
           return from(this.jwtService.signAsync({ user })).pipe(
             map((jwt) => {
@@ -47,7 +47,7 @@ export class AuthService {
    * @param email
    * @param password
    */
-  validateUser(email: string, password: string): Observable<User> {
+  validateUser(email: string, password: string): Observable<UserEntity>  {
     return from(
       this.userRepository.findOne(
         { email },
@@ -56,7 +56,7 @@ export class AuthService {
         },
       ),
     ).pipe(
-      switchMap((user: User) => {
+      switchMap((user: UserEntity) => {
         if (!user) {
           // throw new HttpException('Not found', HttpStatus.NOT_FOUND);
           throw new HttpException(

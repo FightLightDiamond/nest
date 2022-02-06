@@ -4,7 +4,7 @@ import { PostRepository } from '../repositories/post.repository';
 import { FeedPost } from '../models/post.interface';
 import { from, Observable } from 'rxjs';
 import { DeleteResult, UpdateResult } from 'typeorm';
-import { User } from '../../user/user.entity';
+import { UserEntity } from '../../user/user.entity';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 
@@ -30,7 +30,7 @@ export class FeedService {
     );
   }
 
-  createPost(user: User, feedPost: FeedPost): Observable<FeedPost> {
+  createPost(user: UserEntity, feedPost: FeedPost): Observable<FeedPost> {
     // feedPost.author = user;
     feedPost.authorId = user.id;
     // console.log({ user, feedPost });

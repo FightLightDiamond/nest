@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { FriendRequest } from './friend-request.entity';
+import { FriendRequestEntity } from './friend-request.entity';
 
-@EntityRepository(FriendRequest)
-export class FriendRequestRepository extends Repository<FriendRequest> {}
+@EntityRepository(FriendRequestEntity)
+export class FriendRequestRepository extends Repository<FriendRequestEntity> {}

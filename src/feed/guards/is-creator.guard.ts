@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 import { AuthService } from '../../auth/auth.service';
 import { FeedService } from '../services/feed.service';
-import { User } from '../../user/user.entity';
+import { UserEntity } from '../../user/user.entity';
 import { RoleEnum } from '../../auth/role.enum';
 import { FeedPost } from '../models/post.interface';
 
@@ -17,7 +17,7 @@ export class IsCreatorGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { user, params }: { user: User; params: { id: number } } = request;
+    const { user, params }: { user: UserEntity; params: { id: number } } = request;
 
     if (!user || !params) return false;
     // allow admins to get make requests

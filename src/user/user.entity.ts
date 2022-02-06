@@ -10,33 +10,43 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Post } from '../feed/models/post.entity';
+import {PostEntity} from '../feed/models/post.entity';
 import { RoleEnum } from '../auth/role.enum';
 import { UserInterface } from './user.interface';
-import { FriendRequest } from '../connect/friend-request.entity';
-import { Conversation } from '../chat/conversation/conversation.entity';
-import { Message } from '../chat/message/message.entity';
+import { FriendRequestEntity } from '../connect/friend-request.entity';
+import { ConversationEntity } from '../chat/conversation/conversation.entity';
+import { MessageEntity } from '../chat/message/message.entity';
 import { Exclude, Expose } from 'class-transformer';
+import {ConnectedUserEntity} from "../chat/connected-user/connected-user.entity";
+import {JoinedRoomEntity} from "../chat/joined-room/joined-room.entity";
+import {RoomEntity} from "../chat/room/room.entity";
+import {PollEntity} from "../poll/poll.entity";
+import {Field, ObjectType} from "@nestjs/graphql";
 
+@ObjectType()
 @Entity('users')
-export class User extends BaseEntity implements UserInterface {
+export class UserEntity extends BaseEntity implements UserInterface {
+  @Field()
   @PrimaryGeneratedColumn({
     comment: 'The quiz unique identifier',
   })
   id: number;
 
+  @Field()
   @Column({
     type: 'varchar',
     nullable: true,
   })
   firstName: string;
 
+  @Field()
   @Column({
     type: 'varchar',
     nullable: true,
   })
   lastName: string;
 
+  @Field()
   @Column({
     type: 'varchar',
     nullable: false,
@@ -44,12 +54,14 @@ export class User extends BaseEntity implements UserInterface {
   })
   email: string;
 
+  @Field()
   @Column({
     type: 'varchar',
   })
   @Exclude()
   password: string;
 
+  @Field()
   @Column({
     type: 'varchar',
     unique: true,
@@ -57,12 +69,14 @@ export class User extends BaseEntity implements UserInterface {
   })
   phoneNumber: string;
 
+  @Field()
   @Column({
     type: 'varchar',
     nullable: true,
   })
   imagePath: string;
 
+  @Field()
   @Column({
     type: 'enum',
     enum: RoleEnum,
@@ -71,12 +85,19 @@ export class User extends BaseEntity implements UserInterface {
   })
   role: RoleEnum;
 
+  @Field()
+  @Column({default: false})
+  confirmed: boolean
+
+  @Field()
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Field()
   @Expose()
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;
@@ -85,31 +106,56 @@ export class User extends BaseEntity implements UserInterface {
   /**
    * Relationship
    */
-  @OneToMany(() => Post, (post) => post.author)
-  posts: Post[];
+  // @Field(() => [Post])
+  @OneToMany(() => PostEntity, (post) => post.author)
+  posts: PostEntity[];
   //sent friends
   @OneToMany(
-    () => FriendRequest,
-    (friendRequestEntity) => friendRequestEntity.creator,
+    () => FriendRequestEntity,
+    (friendRequest) => friendRequest.creator,
   )
-  sentFriendRequests: FriendRequest[];
+  sentFriendRequests: FriendRequestEntity[];
 
   //receive friends
+  // @Field()
   @OneToMany(
-    () => FriendRequest,
-    (friendRequestEntity) => friendRequestEntity.receiver,
+    () => FriendRequestEntity,
+    (friendRequest) => friendRequest.receiver,
   )
-  receiveFriendRequests: FriendRequest[];
+  receiveFriendRequests: FriendRequestEntity[];
 
   //conversation
-  @ManyToMany(() => Conversation)
-  conversations: Conversation[];
+  // @Field()
+  @ManyToMany(() => ConversationEntity)
+  conversations: ConversationEntity[];
 
   //message
-  @OneToMany(() => Message, (message) => message.user)
-  messages: Message[];
+  // @Field()
+  @OneToMany(() => MessageEntity, (message) => message.user)
+  messages: MessageEntity[];
+
+  //connections
+  // @Field()
+  @OneToMany(() => ConnectedUserEntity, connection => connection.user)
+  connections: ConnectedUserEntity[];
+
+  // join room
+  // @Field()
+  @OneToMany(() => JoinedRoomEntity, joinedRoom => joinedRoom.room)
+  joinedRooms: JoinedRoomEntity[];
+
+  // room entity
+  // @Field()
+  @ManyToMany(() => RoomEntity, room => room.users)
+  rooms: RoomEntity[]
+
+  //poll
+  // @Field()
+  @OneToMany(() => PollEntity, poll => poll.user)
+  poll: Promise<PollEntity[]>;
 
   @BeforeInsert()
+  //Hash password before save
   async setPassword(password: string) {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(password || this.password, salt);

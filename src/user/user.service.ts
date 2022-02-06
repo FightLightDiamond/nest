@@ -1,17 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable, NotFoundException} from '@nestjs/common';
 import { RegisterReqDto } from './dto/register.req.dto';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { from, map, Observable, of, switchMap } from 'rxjs';
 import { UpdateResult } from 'typeorm';
-import { FriendRequest } from '../connect/friend-request.entity';
+import { FriendRequestEntity } from '../connect/friend-request.entity';
 import { FriendRequestRepository } from '../connect/friend-request.repository';
 import {
   IFriendRequestInterface,
   IFriendRequestStatus,
   TFriendRequestStatus,
 } from '../connect/friend-request.interface';
+import {SignupInput} from "./input/signup.input";
+import {UserInterface} from "./user.interface";
+import {ErrorResponse} from "./shared/errorResponse";
+import {ConfirmEmailService} from "./email/confirmEmail.service";
+import {redis} from "../redis";
+import {Response} from "express";
+import {LoginInput} from "./input/login.input";
+import * as bcrypt from 'bcrypt';
+import {JwtService} from "@nestjs/jwt";
 
 @Injectable()
 /**
@@ -21,23 +30,90 @@ export class UserService {
   /**
    * @param userRepository
    * @param friendRequestRepository
+   * @param confirmEmailService
+   * @param jwtService
    */
   constructor(
     @InjectRepository(UserRepository) private userRepository: UserRepository,
     @InjectRepository(FriendRequestRepository)
     private friendRequestRepository: FriendRequestRepository,
+    private confirmEmailService: ConfirmEmailService,
+    private jwtService: JwtService,
   ) {}
 
   /**
    * Do User Registration
    * @param registerBody
    */
-  async doUserRegistration(registerBody: RegisterReqDto): Promise<User> {
-    const user = new User();
+  async doUserRegistration(registerBody: RegisterReqDto): Promise<UserEntity>  {
+    const user = new UserEntity();
     // user.name = registerBody.name;
     user.email = registerBody.email;
     user.password = registerBody.password;
     return await user.save();
+  }
+
+  /**
+   *
+   * @param signupInput
+   */
+  async signup(signupInput: SignupInput): Promise<ErrorResponse[] | null> {
+    const userExit = await this.userRepository.findOne({where: {email: signupInput.email}})
+    if(userExit) {
+      return [
+        {
+          path: "email",
+          message: "invalid email"
+        }
+      ]
+    }
+    const user = new UserEntity();
+    user.email = signupInput.email
+    user.password = signupInput.password
+    user.save()
+    // const user  = await this.userRepository.save({
+    //   ...signupInput
+    // })
+
+    await this.confirmEmailService.sent(user.id)
+
+    return null
+  }
+
+  async login(loginInput: LoginInput): Promise<ErrorResponse[] | string> {
+    const user = await this.userRepository.findOne({where: {email: loginInput.email}})
+    if(!user) {
+      return [
+        {
+          path: "email",
+          message: "invalid email"
+        }
+      ]
+    }
+
+    console.log({
+      loginInput, user
+    })
+
+    const checkPassword = await bcrypt.compare(loginInput.password, user.password)
+
+    if(!checkPassword) {
+      return [
+        {
+          path: "password",
+          message: "Password invalid"
+        }
+      ]
+    }
+
+    const jwt =  await this.jwtService.signAsync({ user })
+
+    return [
+      {
+        path: "password",
+        message: jwt
+      }
+    ]
   }
 
   /**
@@ -46,7 +122,7 @@ export class UserService {
    */
   findUserById(id: number) {
     return from(this.userRepository.findOne(id, { relations: ['posts'] })).pipe(
-      map((user: User) => {
+      map((user: UserEntity) => {
         delete user.password;
         return user;
       }),
@@ -59,7 +135,7 @@ export class UserService {
    * @param imagePath
    */
   updateUserImageById(id: number, imagePath: string): Observable<UpdateResult> {
-    const user: User = new User();
+    const user: UserEntity = new UserEntity();
     user.id = id;
     user.imagePath = imagePath;
     return from(this.userRepository.update(id, user));
@@ -83,8 +159,8 @@ export class UserService {
    * @param receiver
    */
   hasRequestBeenSentOrReceived(
-    creator: User,
-    receiver: User,
+    creator: UserEntity,
+    receiver: UserEntity,
   ): Observable<boolean> {
     return from(
       this.friendRequestRepository.findOne({
@@ -107,14 +183,14 @@ export class UserService {
    */
   sendFriendRequest(
     receiverId: number,
-    creator: User,
-  ): Observable<FriendRequest | { error: string }> {
+    creator: UserEntity,
+  ): Observable<FriendRequestEntity | { error: string }> {
     if (receiverId === creator.id) {
       return of({ error: 'It is not possible to add yourself!' });
     }
 
     return this.findUserById(receiverId).pipe(
-      switchMap((receiver: User) => {
+      switchMap((receiver: UserEntity) => {
         return this.hasRequestBeenSentOrReceived(receiver, creator).pipe(
           switchMap((hasRequestBeenSentOrReceived: boolean) => {
             if (hasRequestBeenSentOrReceived)
@@ -146,14 +222,14 @@ export class UserService {
    */
   getFriendRequest(
     receiverId: number,
-    creator: User,
+    creator: UserEntity,
   ): Observable<IFriendRequestStatus | { error: string }> {
     if (receiverId === creator.id) {
       return of({ error: 'It is not possible to add yourself!' });
     }
 
     return this.findUserById(receiverId).pipe(
-      switchMap((receiver: User) => {
+      switchMap((receiver: UserEntity) => {
         return from(
           this.friendRequestRepository.findOne({
             where: [
@@ -175,7 +251,7 @@ export class UserService {
    * Get Me Friend Request
    * @param creator
    */
-  getMeFriendRequest(creator: User): Observable<IFriendRequestInterface[]> {
+  getMeFriendRequest(creator: UserEntity): Observable<IFriendRequestInterface[]> {
     return from(
       this.friendRequestRepository.find({
         where: [{ creator }, { receiver: creator }],
@@ -187,7 +263,7 @@ export class UserService {
    * Get Friend Request User By Id
    * @param friendRequestId
    */
-  getFriendRequestUserById(friendRequestId: number): Observable<FriendRequest> {
+  getFriendRequestUserById(friendRequestId: number): Observable<FriendRequestEntity> {
     return from(this.friendRequestRepository.findOne(friendRequestId));
   }
 
@@ -224,7 +300,19 @@ export class UserService {
    * Get User By Email
    * @param email
    */
-  async getUserByEmail(email: string): Promise<User> {
-    return await this.userRepository.getUserByEmail(email);
+  async getUserByEmail(email: string): Promise<UserInterface>  {
+    return await this.userRepository.getUserByEmail(email)
+  }
+
+  async confirmEmail(id: string) {
+    const userId = await redis.get(id)
+    if(!userId) {
+      throw new NotFoundException()
+    }
+
+    await this.userRepository.update({id: parseInt(userId)}, {confirmed: true})
+    await redis.del(id)
+
+    return '0k'
   }
 }

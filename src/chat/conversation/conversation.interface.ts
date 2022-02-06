@@ -1,8 +1,8 @@
-import { User } from '../../user/user.entity';
+import { UserEntity } from '../../user/user.entity';
 
 export interface ConversationInterface {
   id?: number;
-  users?: User[];
+  users?: UserEntity[];
   createdAt?: Date;
   updatedAt?: Date;
 }

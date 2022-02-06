@@ -1,10 +1,10 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import { NotFoundException } from '@nestjs/common';
 
-@EntityRepository(User)
-export class UserRepository extends Repository<User> {
-  async getUserByEmail(email: string): Promise<User> {
+@EntityRepository(UserEntity)
+export class UserRepository extends Repository<UserEntity>  {
+  async getUserByEmail(email: string): Promise<UserEntity>  {
     return await this.findOne({
       where: { email: email },
     }).then((entity) => {

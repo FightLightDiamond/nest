@@ -11,6 +11,7 @@ import { PassportModule } from '@nestjs/passport';
 import { RolesGuard } from './guards/roles.guard';
 import { AuthTokenService } from './auth-token/auth-token.service';
 import { AuthTokenRepository } from './auth-token/auth-token.repository';
+import {GqlAuthGuard} from "./guards/gqlAuth.guard";
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { AuthTokenRepository } from './auth-token/auth-token.repository';
     TypeOrmModule.forFeature([UserRepository, AuthTokenRepository]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtGuard, RolesGuard, AuthTokenService],
+  providers: [AuthService, JwtStrategy, JwtGuard, RolesGuard, AuthTokenService, GqlAuthGuard],
   exports: [AuthService],
 })
 export class AuthModule {}

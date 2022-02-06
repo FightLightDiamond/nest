@@ -8,11 +8,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { TFriendRequestStatus } from './friend-request.interface';
 
 @Entity('friend_requests')
-export class FriendRequest extends BaseEntity {
+export class FriendRequestEntity extends BaseEntity {
   @PrimaryGeneratedColumn({
     comment: 'The quiz unique identifier',
   })
@@ -25,13 +25,13 @@ export class FriendRequest extends BaseEntity {
   status: TFriendRequestStatus;
 
   //creator
-  @ManyToOne(() => User, (creator) => creator.sentFriendRequests)
+  @ManyToOne(() => UserEntity, (creator) => creator.sentFriendRequests)
   @JoinColumn({ name: 'creator' })
-  creator: User;
+  creator: UserEntity;
   //receive
-  @ManyToOne(() => User, (receiver) => receiver.receiveFriendRequests)
+  @ManyToOne(() => UserEntity, (receiver) => receiver.receiveFriendRequests)
   @JoinColumn({ name: 'receiver' })
-  receiver: User;
+  receiver: UserEntity;
 
   @CreateDateColumn()
   createdAt: Date;

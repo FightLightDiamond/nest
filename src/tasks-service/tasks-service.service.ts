@@ -5,7 +5,7 @@ import { Cron } from '@nestjs/schedule';
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron('*/50 * * * * *', {
+  @Cron('*/50 0 * * * *', {
     name: 'notifications',
   })
   handleCron() {

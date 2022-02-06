@@ -1,4 +1,4 @@
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import {CacheModule, HttpModule, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,8 +11,8 @@ import { ConfigModule } from '@nestjs/config';
 import { FeedModule } from './feed/feed.module';
 import { AuthModule } from './auth/auth.module';
 import { ConnectModule } from './connect/connect.module';
-import { APP_FILTER } from '@nestjs/core';
-import { AllExceptionsFilter } from './_app/exceptions/all-exceptions.filter';
+// import { APP_FILTER } from '@nestjs/core';
+// import { AllExceptionsFilter } from './_app/exceptions/all-exceptions.filter';
 import { ChatModule } from './chat/chat.module';
 import { CacheConfigAsync } from './config/cache.config';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -23,13 +23,27 @@ import { AudioConsumer } from './_app/queue/consumers/AudioConsumer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OrderCreatedListener } from './_app/observers/listeners/OrderCreatedListener';
 import { ProductModule } from './product/product.module';
-// import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseModule } from '@nestjs/mongoose';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ExampleEmailServiceService } from './example-email-service/example-email-service.service';
+import {LoggerMiddleware} from "./logger.middleware";
+import {GraphQLModule} from "@nestjs/graphql";
+import {ConfirmEmailService} from "./user/email/confirmEmail.service";
+import {GqlAuthGuard} from "./auth/guards/gqlAuth.guard";
+import {PollModule} from "./poll/poll.module";
+import {ApolloDriver, ApolloDriverConfig} from "@nestjs/apollo";
+// import {PollModule} from "./poll/poll.module";
 
 @Module({
   imports: [
+    GraphQLModule.forRoot({
+      // driver: ApolloDriver,
+      debug: true,
+      playground: true,
+      installSubscriptionHandlers: true,
+      autoSchemaFile: 'schema.gql'
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
@@ -37,9 +51,9 @@ import { ExampleEmailServiceService } from './example-email-service/example-emai
     // Mysql
     TypeOrmModule.forRootAsync(typeormConfigAsync),
     //Mongo
-    // MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
-    //   autoCreate: true,
-    // }),
+    MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
+      autoCreate: true,
+    }),
     HttpModule,
     CsvModule,
     // TypeOrmModule.forRoot(typeormConfig),
@@ -86,18 +100,32 @@ import { ExampleEmailServiceService } from './example-email-service/example-emai
         },
       },
     }),
+    PollModule,
+    //guard
+    // GqlAuthGuard
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
+    //Handle Exception
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
     TasksService,
     AudioConsumer,
     OrderCreatedListener,
     ExampleEmailServiceService,
+    ConfirmEmailService
   ],
 })
-export class AppModule {}
+
+export class AppModule implements NestModule {
+  // apply middleware
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('home')
+      // .forRoutes({ path: 'home', method: RequestMethod.ALL })
+  }
+}

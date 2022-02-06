@@ -1,5 +1,5 @@
 import {
-  CreateDateColumn,
+  // CreateDateColumn,
   Entity,
   ManyToMany,
   OneToMany,
@@ -7,20 +7,20 @@ import {
   UpdateDateColumn,
   JoinTable,
 } from 'typeorm';
-import { User } from '../../user/user.entity';
-import { Message } from '../message/message.entity';
+import { UserEntity } from '../../user/user.entity';
+import { MessageEntity } from '../message/message.entity';
 
 @Entity('conversations')
-export class Conversation {
+export class ConversationEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => UserEntity)
   @JoinTable()
-  users: User[];
+  users: UserEntity[];
 
-  @OneToMany(() => Message, (message) => message.conversation)
-  messages: Message[];
+  @OneToMany(() => MessageEntity, (message) => message.conversation)
+  messages: MessageEntity[];
 
   @UpdateDateColumn()
   lastUpdated: Date;

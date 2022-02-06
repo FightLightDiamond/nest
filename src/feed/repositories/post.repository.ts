@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Post } from '../models/post.entity';
+import { PostEntity } from '../models/post.entity';
 
-@EntityRepository(Post)
-export class PostRepository extends Repository<Post> {}
+@EntityRepository(PostEntity)
+export class PostRepository extends Repository<PostEntity> {}

@@ -24,7 +24,7 @@ import {
   isFileExtensionSafe,
   removeFile,
   saveImageToStorage,
-} from '../_app/helpers/image-storage';
+} from '../_common/helpers/image-storage';
 import { Observable, of, switchMap } from 'rxjs';
 const path = require('path');
 import { UpdateResult } from 'typeorm';

@@ -24,6 +24,8 @@ type ErrorResponse {
 type Query {
   hello: String!
   poll(id: Float!): PollEntity!
+  allPolls(take: Float!, skip: Float!): [PollEntity!]!
+  myPoll: [PollEntity!]!
 }
 
 type Mutation {
@@ -31,6 +33,7 @@ type Mutation {
   login(loginInput: LoginInput!): [ErrorResponse!]
   createPoll(name: String!, options: [String!]!): Boolean!
   vote(pollOptionId: Float!): Boolean!
+  deletePoll(id: Float!): Boolean!
 }
 
 """New recipe data"""

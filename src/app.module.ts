@@ -12,16 +12,16 @@ import { FeedModule } from './feed/feed.module';
 import { AuthModule } from './auth/auth.module';
 import { ConnectModule } from './connect/connect.module';
 // import { APP_FILTER } from '@nestjs/core';
-// import { AllExceptionsFilter } from './_app/exceptions/all-exceptions.filter';
+// import { AllExceptionsFilter } from './_common/exceptions/all-exceptions.filter';
 import { ChatModule } from './chat/chat.module';
 import { CacheConfigAsync } from './config/cache.config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks-service/tasks-service.service';
 import { BullModule } from '@nestjs/bull';
 import { queueConfigAsync } from './config/queue.config';
-import { AudioConsumer } from './_app/queue/consumers/AudioConsumer';
+import { AudioConsumer } from './_common/queue/consumers/AudioConsumer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { OrderCreatedListener } from './_app/observers/listeners/OrderCreatedListener';
+import { OrderCreatedListener } from './_common/observers/listeners/OrderCreatedListener';
 import { ProductModule } from './product/product.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -33,6 +33,7 @@ import {ConfirmEmailService} from "./user/email/confirmEmail.service";
 import {GqlAuthGuard} from "./auth/guards/gqlAuth.guard";
 import {PollModule} from "./poll/poll.module";
 import {ApolloDriver, ApolloDriverConfig} from "@nestjs/apollo";
+import {pollOptionLoader} from "./poll/loaders/pollOptionLoader";
 // import {PollModule} from "./poll/poll.module";
 
 @Module({
@@ -42,7 +43,12 @@ import {ApolloDriver, ApolloDriverConfig} from "@nestjs/apollo";
       debug: true,
       playground: true,
       installSubscriptionHandlers: true,
-      autoSchemaFile: 'schema.gql'
+      autoSchemaFile: 'schema.gql',
+      context: ({ req, res }) => ({
+        req,
+        res,
+        pollOptionLoader: pollOptionLoader(),
+      }),
     }),
     ConfigModule.forRoot({
       envFilePath: '.env',

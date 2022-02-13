@@ -1,20 +1,18 @@
-import {Args, Context, Mutation, Query, Resolver} from '@nestjs/graphql';
+import {Args, Context, Mutation, Query, ResolveProperty, Resolver, Root} from '@nestjs/graphql';
 import {PollService} from "./poll.service";
 import {Get, Request, UseGuards} from "@nestjs/common";
-import {JwtGuard} from "../auth/guards/jwt.guard";
 import {GqlAuthGuard} from "../auth/guards/gqlAuth.guard";
 import {GetUserIdDecorator} from "./getUserId.decorator";
 import {CreatePollArgs} from "./args/createPoll.args";
-import {Connection, getConnection, Transaction} from "typeorm";
+import {Connection} from "typeorm";
 import {Exception} from "handlebars";
 import {MyContextTypes} from "./types/myContext.types";
 import {PollEntity} from "./poll.entity";
-import {PollTypes} from "./types/poll.types";
-import {PollModel} from "./models/poll.model";
-// import {GqlAuthGuard} from "../_app/guards/gqlAuth.guard";
+import {AllPollsArgs} from "./args/AllPollsArgs";
+import {PollOptionEntity} from "./pollOption.entity";
 
 
-@Resolver('Poll')
+@Resolver(() => PollEntity)
 export class PollResolver {
   constructor(private readonly pollService: PollService, private connection: Connection) {
   }
@@ -55,5 +53,34 @@ export class PollResolver {
   @Query(() => PollEntity)
   async poll(@Args('id') id: number): Promise<PollEntity> {
     return this.pollService.poll(id)
+  }
+
+  @Query(() => [PollEntity])
+  async allPolls(@Args() {take, skip}: AllPollsArgs): Promise<PollEntity[]> {
+    return this.pollService.allPolls(take, skip)
+  }
+
+  @Mutation(() => Boolean)
+  async deletePoll(
+    @Context() ctx: MyContextTypes,
+    @Args('id') id: number
+  ): Promise<Boolean> {
+    return this.pollService.deletePoll(ctx, id)
+  }
+
+  @Query(() => [PollEntity])
+  @UseGuards(GqlAuthGuard)
+  async myPoll(@GetUserIdDecorator() userId: string): Promise<PollEntity[]>
+  {
+    return this.pollService.myPoll(userId)
+  }
+
+  @ResolveProperty('pollOption')
+  async pollOption(
+    @Root() poll: PollEntity,
+    @Context() ctx: MyContextTypes
+  ): Promise<PollOptionEntity[]> {
+    debugger
+    return await ctx.pollOptionLoader.load(poll.id)
   }
 }

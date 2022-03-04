@@ -1,4 +1,4 @@
-import {Args, Context, Mutation, Query, ResolveProperty, Resolver, Root} from '@nestjs/graphql';
+import {Args, Context, Mutation, Query, ResolveField, ResolveProperty, Resolver, Root} from '@nestjs/graphql';
 import {PollService} from "./poll.service";
 import {Get, Request, UseGuards} from "@nestjs/common";
 import {GqlAuthGuard} from "../auth/guards/gqlAuth.guard";
@@ -75,7 +75,7 @@ export class PollResolver {
     return this.pollService.myPoll(userId)
   }
 
-  @ResolveProperty('pollOption')
+  @ResolveField('pollOption')
   async pollOption(
     @Root() poll: PollEntity,
     @Context() ctx: MyContextTypes

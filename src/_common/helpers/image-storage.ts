@@ -4,13 +4,22 @@ import * as fs from 'fs';
 type validFileExtension = 'png' | 'jpg' | 'jpeg';
 type validMimeType = 'image/png' | 'image/jpg' | 'image/jpeg';
 
+/**
+ * validFileExtensions
+ */
 const validFileExtensions: validFileExtension[] = ['png', 'jpg', 'jpeg'];
+/**
+ * validMineTypes
+ */
 const validMineTypes: validMimeType[] = [
   'image/png',
   'image/jpg',
   'image/jpeg',
 ];
 
+/**
+ * diskStorage
+ */
 const storage = diskStorage({
   destination: './images',
   filename: function (req, file, cb) {
@@ -22,6 +31,9 @@ const storage = diskStorage({
   },
 });
 
+/**
+ * saveImageToStorage
+ */
 export const saveImageToStorage = {
   storage: storage,
   fileFilter: (req, file, cb) => {
@@ -30,6 +42,10 @@ export const saveImageToStorage = {
   },
 };
 
+/**
+ * isFileExtensionSafe
+ * @param fullFilePath
+ */
 export const isFileExtensionSafe = (fullFilePath: string): boolean => {
   debugger;
   const ext: string[] = path.extname(fullFilePath).split('.');
@@ -37,6 +53,10 @@ export const isFileExtensionSafe = (fullFilePath: string): boolean => {
   return validFileExtensions.includes(fileExtension);
 };
 
+/**
+ * removeFile
+ * @param fullFilePath
+ */
 export const removeFile = (fullFilePath: string): void => {
   try {
     fs.unlinkSync(fullFilePath);

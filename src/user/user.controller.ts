@@ -19,7 +19,7 @@ import { SETTING } from '../app.utils';
 import { UserEntity } from './user.entity';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {Express, Response} from 'express';
+import {Express} from 'express';
 import {
   isFileExtensionSafe,
   removeFile,
@@ -157,6 +157,6 @@ export class UserController {
   @Get('/confirm/:id')
   confirmEmail(@Param('id') id: string) {
     return this.userService.confirmEmail(id)
-    return `This action return a #${id} cat`
+    // return `This action return a #${id} cat`
   }
 }

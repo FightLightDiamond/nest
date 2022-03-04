@@ -1,4 +1,4 @@
-import {Injectable, NotFoundException} from '@nestjs/common';
+import {CACHE_MANAGER, Inject, Injectable, NotFoundException} from '@nestjs/common';
 import { RegisterReqDto } from './dto/register.req.dto';
 import { UserEntity } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,11 +16,11 @@ import {SignupInput} from "./input/signup.input";
 import {UserInterface} from "./user.interface";
 import {ErrorResponse} from "./shared/errorResponse";
 import {ConfirmEmailService} from "./email/confirmEmail.service";
-import {redis} from "../redis";
-import {Response} from "express";
+// import {redis} from "../redis";
 import {LoginInput} from "./input/login.input";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@nestjs/jwt";
+import { Cache } from 'cache-manager';
 
 @Injectable()
 /**
@@ -32,6 +32,7 @@ export class UserService {
    * @param friendRequestRepository
    * @param confirmEmailService
    * @param jwtService
+   * @param cacheManager
    */
   constructor(
     @InjectRepository(UserRepository) private userRepository: UserRepository,
@@ -39,6 +40,7 @@ export class UserService {
     private friendRequestRepository: FriendRequestRepository,
     private confirmEmailService: ConfirmEmailService,
     private jwtService: JwtService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {}
 
   /**
@@ -305,13 +307,15 @@ export class UserService {
   }
 
   async confirmEmail(id: string) {
-    const userId = await redis.get(id)
+    const userId = await this.cacheManager.get(id)
     if(!userId) {
       throw new NotFoundException()
     }
 
-    await this.userRepository.update({id: parseInt(userId)}, {confirmed: true})
-    await redis.del(id)
+    if (typeof userId === "string") {
+      await this.userRepository.update({id: parseInt(userId)}, {confirmed: true})
+    }
+    await this.cacheManager.del(id)
 
     return '0k'
   }

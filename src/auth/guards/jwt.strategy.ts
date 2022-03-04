@@ -33,19 +33,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param payload
    */
   async validate(@Request() req, payload) {
-    console.log('validate', {payload})
     const { user } = payload;
     debugger;
-    // const bearerToken = req.header('authorization');
-    // const token = bearerToken.replace('Bearer ', '');
-    // const authToken = await this.authTokenService.find({
-    //   token,
-    //   userId: user.id,
-    // });
-    //
-    // if (!authToken) {
-    //   throw new UnauthorizedException();
-    // }
+    const bearerToken = req.header('authorization');
+    const token = bearerToken.replace('Bearer ', '');
+    const authToken = await this.authTokenService.find({
+      token,
+      userId: user.id,
+    });
+
+    if (!authToken) {
+      throw new UnauthorizedException();
+    }
     return user;
   }
 }

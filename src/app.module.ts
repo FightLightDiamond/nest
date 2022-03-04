@@ -35,11 +35,23 @@ import {PollModule} from "./poll/poll.module";
 import {ApolloDriver, ApolloDriverConfig} from "@nestjs/apollo";
 import {pollOptionLoader} from "./poll/loaders/pollOptionLoader";
 // import {PollModule} from "./poll/poll.module";
+import * as Joi from '@hapi/joi';
+import {PostgresConfigAsync} from "./config/postgres.config";
 
 @Module({
   imports: [
-    GraphQLModule.forRoot({
-      // driver: ApolloDriver,
+    ConfigModule.forRoot({
+      validationSchema: Joi.object({
+        POSTGRES_HOST: Joi.string().required(),
+        POSTGRES_PORT: Joi.number().required(),
+        POSTGRES_USER: Joi.string().required(),
+        POSTGRES_PASSWORD: Joi.string().required(),
+        POSTGRES_DB: Joi.string().required(),
+        PORT: Joi.number(),
+      })
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
       debug: true,
       playground: true,
       installSubscriptionHandlers: true,
@@ -54,12 +66,14 @@ import {pollOptionLoader} from "./poll/loaders/pollOptionLoader";
       envFilePath: '.env',
       isGlobal: true,
     }),
-    // Mysql
-    TypeOrmModule.forRootAsync(typeormConfigAsync),
+    // // Mysql
+    // TypeOrmModule.forRootAsync(typeormConfigAsync),
+    // PostgresConfigAsync
+    TypeOrmModule.forRootAsync(PostgresConfigAsync),
     //Mongo
-    MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
-      autoCreate: true,
-    }),
+    // MongooseModule.forRoot('mongodb://localhost:27017/nest_main', {
+    //   autoCreate: true,
+    // }),
     HttpModule,
     CsvModule,
     // TypeOrmModule.forRoot(typeormConfig),

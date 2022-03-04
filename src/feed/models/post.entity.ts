@@ -9,11 +9,14 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../user/user.entity';
 import {Field, ObjectType} from "@nestjs/graphql";
+import {Exclude, Expose} from "class-transformer";
 
 @ObjectType()
 @Entity('posts')
+// @Exclude()
 export class PostEntity extends BaseEntity {
   @Field()
+  @Expose()
   @PrimaryGeneratedColumn({
     comment: 'The post unique identifier',
   })
@@ -24,9 +27,11 @@ export class PostEntity extends BaseEntity {
     type: 'varchar',
     nullable: true,
   })
+  @Exclude({ toPlainOnly: true })
+  // @Expose()
+  // @Expose({ groups: ['user'] })
   body: string;
 
-  // @Field()
   @ManyToOne(() => UserEntity, (author) => author.posts)
   @JoinColumn({ name: 'authorId' })
   author: UserEntity;

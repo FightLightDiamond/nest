@@ -1,6 +1,6 @@
 import {
   Body,
-  CacheInterceptor,
+  CacheInterceptor, ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,7 +8,7 @@ import {
   Post,
   Put,
   Query,
-  Request,
+  Request, SerializeOptions,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -30,6 +30,10 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
  */
 @Controller('feed')
 @UseInterceptors(CacheInterceptor)
+// @SerializeOptions({
+//   strategy: 'excludeAll'
+// })
+// @UseInterceptors(ClassSerializerInterceptor)
 export class FeedController {
   /**
    * Get Post
@@ -60,10 +64,12 @@ export class FeedController {
    * @param req
    */
   @Roles(RoleEnum.ADMIN, RoleEnum.PREMIUM)
-  @UseGuards(JwtGuard, RolesGuard)
+  // @UseGuards(JwtGuard, RolesGuard)
+  @UseGuards(JwtGuard)
   @Post('/')
   @UsePipes(ValidationPipe)
   create(@Body() post: CreatePostDto, @Request() req): Observable<FeedPost> {
+    console.log('abc')
     return this.feedService.createPost(req.user, post);
   }
 

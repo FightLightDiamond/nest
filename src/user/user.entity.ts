@@ -3,9 +3,9 @@ import {
   BeforeInsert,
   Column,
   CreateDateColumn,
-  Entity,
+  Entity, JoinColumn,
   ManyToMany,
-  OneToMany,
+  OneToMany, OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -22,6 +22,7 @@ import {JoinedRoomEntity} from "../chat/joined-room/joined-room.entity";
 import {RoomEntity} from "../chat/room/room.entity";
 import {PollEntity} from "../poll/poll.entity";
 import {Field, ObjectType} from "@nestjs/graphql";
+import AddressEntity from "./address/address.entity";
 
 @ObjectType()
 @Entity('users')
@@ -154,10 +155,18 @@ export class UserEntity extends BaseEntity implements UserInterface {
   @OneToMany(() => PollEntity, poll => poll.user)
   poll: Promise<PollEntity[]>;
 
-  @BeforeInsert()
   //Hash password before save
+  @BeforeInsert()
   async setPassword(password: string) {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(password || this.password, salt);
   }
+
+  // Address
+  @OneToOne(() => AddressEntity, {
+    eager: true,
+    cascade: true
+  })
+  @JoinColumn()
+  public address: AddressEntity;
 }

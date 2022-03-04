@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import {CACHE_MANAGER, Inject, Injectable} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { POLL_OPTION_ID_PREFIX } from '../constants';
-import { redis } from '../redis';
+// import { redis } from '../redis';
 import { PollEntity } from './poll.entity';
 import { PollRepository } from './poll.repository';
 import {MyContextTypes} from "./types/myContext.types";
 import {PollOptionRepository} from "./pollOption.repository";
+import {Cache} from "cache-manager";
 
 @Injectable()
 export class PollService {
   constructor(
     @InjectRepository(PollRepository)
     private readonly pollRepo: PollRepository,
-
     @InjectRepository(PollOptionRepository)
     private readonly pollOptionRepo: PollOptionRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {}
   async createPoll(
     userId: string,
@@ -47,9 +48,8 @@ export class PollService {
       ctx.req.header('x-forwarded-for') || ctx.req.connection.remoteAddress;
 
     if (ip) {
-      const hasIp = await redis.sismember(
-        `${POLL_OPTION_ID_PREFIX}${pollOption.pollId}`,
-        ip,
+      const hasIp = await this.cacheManager.get(
+        `${POLL_OPTION_ID_PREFIX}${pollOption.pollId}${ip}`
       );
       if (hasIp) {
         return false;
@@ -61,7 +61,7 @@ export class PollService {
       { votes: pollOption.votes + 1 },
     );
 
-    await redis.sadd(`${POLL_OPTION_ID_PREFIX}${pollOption.pollId}`, ip);
+    await this.cacheManager.set(`${POLL_OPTION_ID_PREFIX}${pollOption.pollId}${ip}`, ip);
     return true;
   }
 
@@ -90,7 +90,7 @@ export class PollService {
       await this.pollRepo.delete({ id });
       const ip = ctx.req.header('x-forwarded-for') || ctx.req.connection.remoteAddress;
 
-      await redis.srem(`${POLL_OPTION_ID_PREFIX}${id}`, ip);
+      await this.cacheManager.del(`${POLL_OPTION_ID_PREFIX}${id}${ip}`);
     } catch (err) {
       return false;
     }

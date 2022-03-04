@@ -18,8 +18,8 @@ export default class CacheConfig {
         isGlobal: true,
         ttl: 5 * 60, // seconds
         max: 10000, // maximum number of items in cache
-        host: 'localhost',
-        port: 6379,
+        host: configService.get<string>('REDIS_HOST'),
+        port: parseInt(configService.get<string>('REDIS_PORT')),
       };
     }
     return {

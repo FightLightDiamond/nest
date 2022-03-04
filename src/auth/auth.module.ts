@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import {Global, Module} from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -13,6 +13,7 @@ import { AuthTokenService } from './auth-token/auth-token.service';
 import { AuthTokenRepository } from './auth-token/auth-token.repository';
 import {GqlAuthGuard} from "./guards/gqlAuth.guard";
 
+@Global()
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -21,6 +22,6 @@ import {GqlAuthGuard} from "./guards/gqlAuth.guard";
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtGuard, RolesGuard, AuthTokenService, GqlAuthGuard],
-  exports: [AuthService],
+  exports: [AuthService, AuthTokenService],
 })
 export class AuthModule {}

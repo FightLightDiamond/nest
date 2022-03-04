@@ -1,23 +1,49 @@
-version: '2'
+version: "3"
+
 services:
-  mysqlmaster:
-    image: mysql:5.7
-    environment:
-      - "MYSQL_ROOT_PASSWORD=root"
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    ports:
+      - "5432:5432"
     volumes:
-      - ./data/mysql-master:/var/lib/mysql/
-      - ./config/mysql-master:/etc/mysql/conf.d/
-  mysqlslave:
-    image: mysql:5.7
-    environment:
-      - "MYSQL_ROOT_PASSWORD=root"
+      - ./data/postgres:/data/postgres
+    env_file:
+      - docker.env
+    networks:
+      - nest-n
+
+  pgadmin:
+    links:
+      - postgres:postgres
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "4080:80"
     volumes:
-      - ./data/mysql-slave:/var/lib/mysql/
-      - ./config/mysql-slave:/etc/mysql/conf.d/
-  nredis:
-    image: redis:6.0.3-alpine
-    restart: always
-    #    command: chmod 644 /usr/local/etc/redis/redis.conf
+      - ./data/pgadmin:/root/.pgadmin
+    env_file:
+      - docker.env
+    networks:
+      - nest-n
+
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: ./
     volumes:
-      - ./config/redis.conf:/redis.conf
-    command: [ "redis-server", "/redis.conf" ]
+      - /app/node_modules
+      - ./:/app
+    ports:
+      - '4000:4000'
+    networks:
+      - nest-n
+
+  redis:
+    image: 'redis:latest'
+    networks:
+      - nest-n
+
+networks:
+  nest-n:
+    driver: bridge

@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import {NestFactory, Reflector} from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as fs from 'fs';
 import * as morgan from 'morgan';
@@ -7,16 +7,19 @@ import { Transport } from '@nestjs/microservices';
 // import { WinstonModule } from 'nest-winston';
 // import winston from 'winston';
 import { join } from 'path';
-import * as Store from 'connect-redis'
+// import * as Store from 'connect-redis'
 import * as session from 'express-session'
-import {redis} from "./redis";
+// import {redis} from "./redis";
 import {NestExpressApplication} from "@nestjs/platform-express";
+import * as cookieParser from 'cookie-parser';
+
 const logStream = fs.createWriteStream('api.log', {
   flags: 'a',
 });
 
 
 import { PeerServer } from 'peer';
+import {ClassSerializerInterceptor} from "@nestjs/common";
 
 /**
  * PeerServer
@@ -34,20 +37,26 @@ peerServer.on('stream', (stream) => {
  * Bootstrap
  */
 async function bootstrap() {
-  const RedisStore = Store(session)
+  // const RedisStore = Store(session)
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
+  //serializer
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(
+    app.get(Reflector))
+  );
+  //cookie
+  app.use(cookieParser());
   //cors
   app.enableCors();
   app.setGlobalPrefix('api');
   app.use(morgan('tiny', { stream: logStream }));
   //session
   app.use(session({
-    store: new RedisStore({
-      client: redis as any
-    }),
+    // store: new RedisStore({
+    //   client: redis as any
+    // }),
     name: 'votinapp',
     secret: 'secret',
     saveUninitialized: false,

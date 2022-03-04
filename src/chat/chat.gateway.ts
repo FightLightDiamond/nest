@@ -284,7 +284,6 @@ export class ChatGateway
     return { event, data };
   }
 
-  // @UseInterceptors(new TransformInterceptor())
   @UseFilters(new AllExceptionsFilter())
   @SubscribeMessage('identity')
   async identity(@MessageBody() data: number): Promise<number> {

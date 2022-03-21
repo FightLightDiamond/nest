@@ -1,4 +1,11 @@
-import {CacheModule, HttpModule, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
+import {
+  CacheModule,
+  HttpModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -27,16 +34,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ExampleEmailServiceService } from './example-email-service/example-email-service.service';
-import {LoggerMiddleware} from "./logger.middleware";
-import {GraphQLModule} from "@nestjs/graphql";
-import {ConfirmEmailService} from "./user/email/confirmEmail.service";
-import {GqlAuthGuard} from "./auth/guards/gqlAuth.guard";
-import {PollModule} from "./poll/poll.module";
-import {ApolloDriver, ApolloDriverConfig} from "@nestjs/apollo";
-import {pollOptionLoader} from "./poll/loaders/pollOptionLoader";
+import { LoggerMiddleware } from './logger.middleware';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ConfirmEmailService } from './user/email/confirmEmail.service';
+import { GqlAuthGuard } from './auth/guards/gqlAuth.guard';
+import { PollModule } from './poll/poll.module';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { pollOptionLoader } from './poll/loaders/pollOptionLoader';
 // import {PollModule} from "./poll/poll.module";
 import * as Joi from '@hapi/joi';
-import {PostgresConfigAsync} from "./config/postgres.config";
+import { PostgresConfigAsync } from './config/postgres.config';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -47,8 +55,13 @@ import {PostgresConfigAsync} from "./config/postgres.config";
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_DB: Joi.string().required(),
+        AWS_REGION: Joi.string().required(),
+        AWS_ACCESS_KEY_ID: Joi.string().required(),
+        AWS_SECRET_ACCESS_KEY: Joi.string().required(),
+        AWS_PUBLIC_BUCKET_NAME: Joi.string().required(),
+        AWS_PRIVATE_BUCKET_NAME: Joi.string().required(),
         PORT: Joi.number(),
-      })
+      }),
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -121,6 +134,8 @@ import {PostgresConfigAsync} from "./config/postgres.config";
       },
     }),
     PollModule,
+    //Search Module
+    SearchModule,
     //guard
     // GqlAuthGuard
   ],
@@ -136,16 +151,13 @@ import {PostgresConfigAsync} from "./config/postgres.config";
     AudioConsumer,
     OrderCreatedListener,
     ExampleEmailServiceService,
-    ConfirmEmailService
+    ConfirmEmailService,
   ],
 })
-
 export class AppModule implements NestModule {
   // apply middleware
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('home')
-      // .forRoutes({ path: 'home', method: RequestMethod.ALL })
+    consumer.apply(LoggerMiddleware).forRoutes('home');
+    // .forRoutes({ path: 'home', method: RequestMethod.ALL })
   }
 }

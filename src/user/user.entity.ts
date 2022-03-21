@@ -3,12 +3,12 @@ import {
   BeforeInsert,
   Column,
   CreateDateColumn,
-  Entity, JoinColumn,
+  Entity, Index, JoinColumn,
   ManyToMany,
   OneToMany, OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+  UpdateDateColumn
+} from "typeorm";
 import * as bcrypt from 'bcrypt';
 import {PostEntity} from '../feed/models/post.entity';
 import { RoleEnum } from '../auth/role.enum';
@@ -23,6 +23,8 @@ import {RoomEntity} from "../chat/room/room.entity";
 import {PollEntity} from "../poll/poll.entity";
 import {Field, ObjectType} from "@nestjs/graphql";
 import AddressEntity from "./address/address.entity";
+import PublicFileEntity from "./files/publicFile.entity";
+import PrivateFileEntity from "./files/privateFile.entity";
 
 @ObjectType()
 @Entity('users')
@@ -108,6 +110,7 @@ export class UserEntity extends BaseEntity implements UserInterface {
    * Relationship
    */
   // @Field(() => [Post])
+  @Index()
   @OneToMany(() => PostEntity, (post) => post.author)
   posts: PostEntity[];
   //sent friends
@@ -119,6 +122,7 @@ export class UserEntity extends BaseEntity implements UserInterface {
 
   //receive friends
   // @Field()
+  @Index()
   @OneToMany(
     () => FriendRequestEntity,
     (friendRequest) => friendRequest.receiver,
@@ -127,31 +131,37 @@ export class UserEntity extends BaseEntity implements UserInterface {
 
   //conversation
   // @Field()
+  @Index()
   @ManyToMany(() => ConversationEntity)
   conversations: ConversationEntity[];
 
   //message
   // @Field()
+  @Index()
   @OneToMany(() => MessageEntity, (message) => message.user)
   messages: MessageEntity[];
 
   //connections
   // @Field()
+  @Index()
   @OneToMany(() => ConnectedUserEntity, connection => connection.user)
   connections: ConnectedUserEntity[];
 
   // join room
   // @Field()
+  @Index()
   @OneToMany(() => JoinedRoomEntity, joinedRoom => joinedRoom.room)
   joinedRooms: JoinedRoomEntity[];
 
   // room entity
   // @Field()
+  @Index()
   @ManyToMany(() => RoomEntity, room => room.users)
   rooms: RoomEntity[]
 
   //poll
   // @Field()
+  @Index()
   @OneToMany(() => PollEntity, poll => poll.user)
   poll: Promise<PollEntity[]>;
 
@@ -163,10 +173,29 @@ export class UserEntity extends BaseEntity implements UserInterface {
   }
 
   // Address
+  @Index()
   @OneToOne(() => AddressEntity, {
     eager: true,
     cascade: true
   })
   @JoinColumn()
   public address: AddressEntity;
+
+  // AWS s3
+  @JoinColumn()
+  @OneToOne(
+    () => PublicFileEntity,
+    {
+      eager: true,
+      nullable: true
+    }
+  )
+  public avatar?: PublicFileEntity;
+
+  @Index()
+  @OneToMany(
+    () => PrivateFileEntity,
+    (file: PrivateFileEntity) => file.owner
+  )
+  public files: PrivateFileEntity[];
 }

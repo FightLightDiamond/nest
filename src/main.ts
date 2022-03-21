@@ -12,7 +12,7 @@ import * as session from 'express-session'
 // import {redis} from "./redis";
 import {NestExpressApplication} from "@nestjs/platform-express";
 import * as cookieParser from 'cookie-parser';
-
+import { config as AWSConfig } from 'aws-sdk';
 const logStream = fs.createWriteStream('api.log', {
   flags: 'a',
 });
@@ -20,6 +20,7 @@ const logStream = fs.createWriteStream('api.log', {
 
 import { PeerServer } from 'peer';
 import {ClassSerializerInterceptor} from "@nestjs/common";
+import {ConfigService} from "@nestjs/config";
 
 /**
  * PeerServer
@@ -87,6 +88,14 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
+
+  // aws
+  const configService = app.get(ConfigService);
+  AWSConfig.update({
+    accessKeyId: configService.get('AWS_ACCESS_KEY_ID'),
+    secretAccessKey: configService.get('AWS_SECRET_ACCESS_KEY'),
+    region: configService.get('AWS_REGION'),
+  });
 }
 
 bootstrap();

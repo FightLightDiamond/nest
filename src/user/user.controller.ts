@@ -11,7 +11,7 @@ import {
   Param,
   Put,
   UsePipes,
-  ValidationPipe,
+  ValidationPipe, Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterReqDto } from './dto/register.req.dto';
@@ -158,5 +158,37 @@ export class UserController {
   confirmEmail(@Param('id') id: string) {
     return this.userService.confirmEmail(id)
     // return `This action return a #${id} cat`
+  }
+
+  @Post('avatar')
+  @UseGuards(JwtGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async addAvatar(@Req() request, @UploadedFile() file: Express.Multer.File) {
+    console.log(file.originalname)
+    return this.userService.addAvatar(request.user.id, file.buffer, file.originalname);
+  }
+
+  @Post('files')
+  @UseGuards(JwtGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async addPrivateFile(@Req() request, @UploadedFile() file: Express.Multer.File) {
+    return this.userService.addPrivateFile(request.user.id, file.buffer, file.originalname);
+  }
+
+  @Get('files/:id')
+  @UseGuards(JwtGuard)
+  async getPrivateFile(
+    @Req() request,
+    @Param() { id },
+    @Res() res
+  ) {
+    const file = await this.userService.getPrivateFile(request.user.id, Number(id));
+    file.stream.pipe(res)
+  }
+
+  @Get('files')
+  @UseGuards(JwtGuard)
+  async getAllPrivateFiles(@Req() request) {
+    return this.userService.getAllPrivateFiles(request.user.id);
   }
 }

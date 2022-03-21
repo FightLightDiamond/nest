@@ -11,12 +11,22 @@ import {jwtConfigAsync} from "../config/jwt.config";
 import {AddressRepository} from "./address/address.repository";
 import {AddressService} from "./address/address.service";
 import {AddressController} from "./address/address.controller";
+import {FilesService} from "./files/files.service";
+import {PublicFileRepository} from "./files/PublicFile.repository";
+import {PrivateFileRepository} from "./files/PrivateFile.repository";
+import {PrivateFilesService} from "./files/privateFiles.service";
 
 @Global()
 @Module({
   imports: [
     CacheModule.register(),
-    TypeOrmModule.forFeature([UserRepository, FriendRequestRepository, AddressRepository]),
+    TypeOrmModule.forFeature([
+      UserRepository,
+      FriendRequestRepository,
+      AddressRepository,
+      PublicFileRepository,
+      PrivateFileRepository
+    ]),
     JwtModule.registerAsync(jwtConfigAsync),
   ],
   controllers: [UserController, AddressController],
@@ -24,7 +34,9 @@ import {AddressController} from "./address/address.controller";
     UserService,
     AddressService,
     UserResolver,
-    ConfirmEmailService
+    ConfirmEmailService,
+    FilesService,
+    PrivateFilesService,
   ],
   exports: [UserService, AddressService],
 })

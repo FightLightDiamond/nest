@@ -44,6 +44,31 @@ services:
     networks:
       - nest-n
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=datasearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.initial_master_nodes=elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - nest-n
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.1.0
+    ports:
+      - "5601:5601"
+    networks:
+      - nest-n
+
 networks:
   nest-n:
     driver: bridge

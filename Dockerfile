@@ -2,13 +2,13 @@
 FROM node:16
 
 # Download and install a dependency
-WORKDIR /app
-COPY ./package.json /app
-RUN rm -rf ./dist
-RUN cd /app && npm cache clean --force && rm -rf node_modules && npm install
-COPY ./ /app
-EXPOSE 4000
+WORKDIR ./app
+COPY ./package.json .
+RUN npm install
+COPY . .
 
 # Tell the image what to do when it starts
 # As a container
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:debug"]
+
+EXPOSE 4000

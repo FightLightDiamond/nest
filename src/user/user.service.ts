@@ -1,4 +1,12 @@
-import {CACHE_MANAGER, Inject, Injectable, NotFoundException} from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from '@nestjs/common';
 import { RegisterReqDto } from './dto/register.req.dto';
 import { UserEntity } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +29,8 @@ import {LoginInput} from "./input/login.input";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@nestjs/jwt";
 import { Cache } from 'cache-manager';
+import {FilesService} from "./files/files.service";
+import {PrivateFilesService} from "./files/privateFiles.service";
 
 @Injectable()
 /**
@@ -32,6 +42,8 @@ export class UserService {
    * @param friendRequestRepository
    * @param confirmEmailService
    * @param jwtService
+   * @param filesService
+   * @param privateFilesService
    * @param cacheManager
    */
   constructor(
@@ -40,6 +52,8 @@ export class UserService {
     private friendRequestRepository: FriendRequestRepository,
     private confirmEmailService: ConfirmEmailService,
     private jwtService: JwtService,
+    private readonly filesService: FilesService,
+    private readonly privateFilesService: PrivateFilesService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {}
 
@@ -318,5 +332,70 @@ export class UserService {
     await this.cacheManager.del(id)
 
     return '0k'
+  }
+
+  /**
+   * Upload file AWS
+   * @param id
+   */
+  async getById(id: number) {
+    const user = await this.userRepository.findOne({ id });
+    if (user) {
+      return user;
+    }
+    throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+  }
+
+  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+    const avatar = await this.filesService.uploadPublicFile(imageBuffer, filename);
+    const user = await this.getById(userId);
+    await this.userRepository.update(userId, {
+      ...user,
+      avatar
+    });
+    return avatar;
+  }
+
+  async deleteAvatar(userId: number) {
+    const user = await this.getById(userId);
+    const fileId = user.avatar?.id;
+    if (fileId) {
+      await this.userRepository.update(userId, {
+        ...user,
+        avatar: null
+      });
+      await this.filesService.deletePublicFile(fileId)
+    }
+  }
+
+  async addPrivateFile(userId: number, imageBuffer: Buffer, filename: string) {
+    return this.privateFilesService.uploadPrivateFile(imageBuffer, userId, filename);
+  }
+
+  async getPrivateFile(userId: number, fileId: number) {
+    const file = await this.privateFilesService.getPrivateFile(fileId);
+    if (file.info.owner.id === userId) {
+      return file;
+    }
+    throw new UnauthorizedException();
+  }
+
+  async getAllPrivateFiles(userId: number) {
+    const userWithFiles = await this.userRepository.findOne(
+      { id: userId },
+      { relations: ['files'] }
+    );
+    if (userWithFiles) {
+      return Promise.all(
+        userWithFiles.files.map(async (file) => {
+          const url = await this.privateFilesService.generatePresignedUrl(file.key);
+          return {
+            ...file,
+            url
+          }
+        })
+      )
+    }
+    throw new NotFoundException('User with this id does not exist');
   }
 }

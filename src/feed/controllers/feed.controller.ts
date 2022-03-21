@@ -1,6 +1,7 @@
 import {
   Body,
-  CacheInterceptor, ClassSerializerInterceptor,
+  CacheInterceptor,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,7 +9,8 @@ import {
   Post,
   Put,
   Query,
-  Request, SerializeOptions,
+  Request,
+  SerializeOptions,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -42,6 +44,14 @@ export class FeedController {
    */
   constructor(private feedService: FeedService) {}
 
+  @Get('search')
+  async getPosts(@Query('search') search: string) {
+    if (search) {
+      return this.feedService.searchForPosts(search);
+    }
+    return this.feedService.gets();
+  }
+
   /**
    * Get Post
    *
@@ -69,7 +79,6 @@ export class FeedController {
   @Post('/')
   @UsePipes(ValidationPipe)
   create(@Body() post: CreatePostDto, @Request() req): Observable<FeedPost> {
-    console.log('abc')
     return this.feedService.createPost(req.user, post);
   }
 

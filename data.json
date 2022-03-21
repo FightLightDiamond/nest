@@ -1,0 +1,6 @@
+{"index": {"_index": "student", "_id": 1}}
+{"name": "ten1", "age": 33}
+{"index": {"_index": "student", "_id": 11}}
+{"name": "ten11", "age": 33}
+{"index": {"_index": "student", "_id": 12}}
+{"name": "ten11", "age": 33}
